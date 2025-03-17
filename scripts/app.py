@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-
 # To view in browerser type " streamlit run (full path location of file)"'
 
 # Load saved model
