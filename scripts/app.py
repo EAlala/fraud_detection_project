@@ -1,6 +1,6 @@
 import streamlit as st
-import pandas as pd
 import joblib
+import pandas as pd
 
 # To view in browerser type " streamlit run (full path location of file)"'
 
