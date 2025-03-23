@@ -1,8 +1,8 @@
 import joblib
-from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score, roc_curve
+from visualizations import plot_roc_curve
 
 # Split data into training and testing sets
 def split_data(data, test_size=.2, random_state=42):
@@ -59,22 +59,14 @@ def evaluate_model(model, x_test, y_test):
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred, zero_division=0))
 
-# Confusion Matrix
+    # Confusion Matrix
     cm = confusion_matrix(y_test, y_pred)
     print("\nConfusion Matrix:")
     print(cm)
 
-    # ROC Curve (optional, for visualization)
+    # ROC Curve (using the visualization function)
     y_pred_proba = model.predict_proba(x_test)[:, 1]
-    fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
-    plt.figure()
-    plt.plot(fpr, tpr, label=f"ROC Curve (AUC = {roc_auc:.2f})")
-    plt.plot([0, 1], [0, 1], linestyle="--", color="gray")
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title("ROC Curve")
-    plt.legend()
-    plt.show()
+    plot_roc_curve(y_test, y_pred_proba, roc_auc)
     
 # Save model to a file
 def save_model(model, filename="fraud_detection_model.pkl"):
