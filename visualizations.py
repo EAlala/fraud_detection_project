@@ -13,8 +13,7 @@ def plot_transaction_amounts_over_time(data):
     plt.ylabel("Transaction Amount")
     plt.legend()
     plt.title("Transaction Amounts Over Time")
-    plt.show(block=False)  # Don't block the script
-    plt.pause(2)  # Display the plot for 2 seconds before moving to the next one
+    plt.show()  # Display the plot for 2 seconds before moving to the next one
 
 def plot_fraud_rates_by_card_type(data):
     # Plots a bar chart of fraud rates by card type.
@@ -25,8 +24,7 @@ def plot_fraud_rates_by_card_type(data):
     plt.xlabel("Card Type")
     plt.ylabel("Fraud Rate")
     plt.title("Fraud Rates by Card Type")
-    plt.show(block=False)  # Don't block the script
-    plt.pause(2)  # Display the plot for 2 seconds before moving to the next one
+    plt.show() # Display the plot for 2 seconds before moving to the next one
 
 def plot_high_risk_transaction_patterns(data):
     # Plots a heatmap of high-risk transaction patterns by card type and category.
@@ -37,8 +35,7 @@ def plot_high_risk_transaction_patterns(data):
     plt.xlabel("Card Category")
     plt.ylabel("Card Type")
     plt.title("High-Risk Transaction Patterns")
-    plt.show(block=False)  # Don't block the script
-    plt.pause(2)  # Display the plot for 2 seconds before moving to the next one
+    plt.show()
 
 def plot_roc_curve(y_test, y_pred_proba, roc_auc):
     # Plots the ROC Curve for the model.
@@ -51,5 +48,4 @@ def plot_roc_curve(y_test, y_pred_proba, roc_auc):
     plt.ylabel("True Positive Rate")
     plt.title("ROC Curve")
     plt.legend()
-    plt.show(block=False)  # Don't block the script
-    plt.pause(2)  # Display the plot for 2 seconds before moving to the next one
+    plt.show()
