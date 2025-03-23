@@ -3,7 +3,7 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
 
 def feature_engineering(data):
     # Selecting useful features
-    features = ["TransactionAmt", "card1", "card2", "addr1", "isFraud", "card4", "card6"]
+    features = ["TransactionAmt", "card1", "card2", "addr1", "isFraud", "card4", "card6", "TransactionDT"]
     data = data[features]
 
     # Encoding categorical variables
