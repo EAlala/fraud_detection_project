@@ -58,33 +58,9 @@ if st.button("Predict"):
         st.error("⚠️ Fraudulent Transaction Detected!")
     else:
         st.success("✅ Transaction is Safe.")
-        
+
 # Visualizations using the loaded data
 st.header("Data Visualizations")
-
-# Line Chart: Trends in Transaction Amounts Over Time
-st.subheader("Transaction Amounts Over Time")
-fig, ax = plt.subplots()
-ax.plot(data["TransactionDT"], data["TransactionAmt"], label="Transaction Amount")
-ax.set_xlabel("Transaction Date")
-ax.set_ylabel("Transaction Amount")
-ax.legend()
-st.pyplot(fig)
-
-# Bar Chart: Fraud Rates by Card Type
-st.subheader("Fraud Rates by Card Type")
-fraud_by_card = data.groupby("card4")["isFraud"].mean().reset_index()
-fig, ax = plt.subplots()
-sns.barplot(x="card4", y="isFraud", data=fraud_by_card, ax=ax)
-ax.set_xlabel("Card Type")
-ax.set_ylabel("Fraud Rate")
-st.pyplot(fig)
-
-# Heatmap: High-Risk Transaction Patterns
-st.subheader("High-Risk Transaction Patterns")
-heatmap_data = data.pivot_table(index="card4", columns="card6", values="isFraud", aggfunc="mean")
-fig, ax = plt.subplots()
-sns.heatmap(heatmap_data, annot=True, cmap="YlOrRd", ax=ax)
-ax.set_xlabel("Card Category")
-ax.set_ylabel("Card Type")
-st.pyplot(fig)
+plot_transaction_amounts_over_time(data)
+plot_fraud_rates_by_card_type(data)
+plot_high_risk_transaction_patterns(data)
