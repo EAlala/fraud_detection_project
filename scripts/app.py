@@ -1,25 +1,8 @@
 import joblib
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # To view in browerser type " streamlit run (full path location of file)"'
-
-# Load the data
-@st.cache_data  # Cache the data to avoid reloading on every interaction
-def load_data():
-    # Load the transaction and identity datasets
-    transaction_data = pd.read_csv("data/train_transaction.csv")
-    identity_data = pd.read_csv("data/train_identity.csv")
-
-    # Merge transaction and identity datasets
-    data = transaction_data.merge(identity_data, on="TransactionID", how="left")
-
-    return data
-
-data = load_data()
-
 # Load saved model
 model = joblib.load("fraud_detection_model.pkl")
 
@@ -58,9 +41,3 @@ if st.button("Predict"):
         st.error("⚠️ Fraudulent Transaction Detected!")
     else:
         st.success("✅ Transaction is Safe.")
-
-# Visualizations using the loaded data
-st.header("Data Visualizations")
-plot_transaction_amounts_over_time(data)
-plot_fraud_rates_by_card_type(data)
-plot_high_risk_transaction_patterns(data)
