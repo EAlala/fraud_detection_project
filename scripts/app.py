@@ -3,7 +3,6 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, roc_curve
 
 # To view in browerser type " streamlit run (full path location of file)"'
 
@@ -27,7 +26,7 @@ model = joblib.load("fraud_detection_model.pkl")
 # Title for app
 st.title("Fraud Detection System")
 
-# Input fields
+# Main app functionality
 st.header("Enter Transaction Details")
 transaction_amt = st.number_input("Transaction Amount", min_value=0.0)
 card1 = st.number_input("card1", min_value=0.0)
@@ -59,38 +58,7 @@ if st.button("Predict"):
         st.error("⚠️ Fraudulent Transaction Detected!")
     else:
         st.success("✅ Transaction is Safe.")
-# Accuracy Evaluation Section
-st.header("Model Performance Evaluation")
-
-# Display metrics
-st.subheader("Evaluation Metrics")
-col1, col2, col3, col4, col5 = st.columns(5)
-col1.metric("Accuracy", f"{accuracy:.2f}")
-col2.metric("Precision", f"{precision:.2f}")
-col3.metric("Recall", f"{recall:.2f}")
-col4.metric("F1-Score", f"{f1:.2f}")
-col5.metric("ROC-AUC", f"{roc_auc:.2f}")
-
-# Confusion Matrix
-st.subheader("Confusion Matrix")
-cm = confusion_matrix(y_test, y_pred)
-fig, ax = plt.subplots()
-sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
-ax.set_xlabel("Predicted")
-ax.set_ylabel("Actual")
-st.pyplot(fig)
-
-# ROC Curve
-st.subheader("ROC Curve")
-fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
-fig, ax = plt.subplots()
-ax.plot(fpr, tpr, label=f"ROC Curve (AUC = {roc_auc:.2f})")
-ax.plot([0, 1], [0, 1], linestyle="--", color="gray")
-ax.set_xlabel("False Positive Rate")
-ax.set_ylabel("True Positive Rate")
-ax.legend()
-st.pyplot(fig)
-
+        
 # Visualizations using the loaded data
 st.header("Data Visualizations")
 
