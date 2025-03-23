@@ -55,14 +55,11 @@ def evaluate_model(model, x_test, y_test):
 
     # Display accuracy and report
     print(f"📊 Model Accuracy: {accuracy:.2f}")
-    print(f"📊 Precision: {precision:.2f}")
-    print(f"📊 Recall: {recall:.2f}")
-    print(f"📊 F1-Score: {f1:.2f}")
     print(f"📊 ROC-AUC: {roc_auc:.2f}")
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred, zero_division=0))
 
-    # Confusion Matrix
+# Confusion Matrix
     cm = confusion_matrix(y_test, y_pred)
     print("\nConfusion Matrix:")
     print(cm)
@@ -78,7 +75,7 @@ def evaluate_model(model, x_test, y_test):
     plt.title("ROC Curve")
     plt.legend()
     plt.show()
-
+    
 # Save model to a file
 def save_model(model, filename="fraud_detection_model.pkl"):
     # Use joblib to save model to file
