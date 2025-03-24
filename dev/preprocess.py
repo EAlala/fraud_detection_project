@@ -1,44 +1,34 @@
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+import numpy as np
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.pipeline import Pipeline
 
-# Missing data cleaning
 def clean_data(data):
-    if data is None:
-        raise ValueError("Input data is None!")
+    # Convert datetime
+    if 'TransactionDT' in data.columns:
+        data['TransactionDT'] = pd.to_datetime(data['TransactionDT'], unit='s')
     
-    for col in data.columns:
-        # Handle numerical columns (fill NaN with median)
-        if data[col].dtype != "object":
-            data.loc[:, col] = data[col].fillna(data[col].median())
-        # Handle categorical columns (fill NaN with mode)
-        else:
-            data.loc[:, col] = data[col].fillna(data[col].mode()[0])
+    # Handle missing values
+    numeric_cols = data.select_dtypes(include=np.number).columns
+    cat_cols = data.select_dtypes(exclude=np.number).columns
     
-    return data
-
-def encode_features(data):
-    # Convert categorical features into numerical ones
-    encoder = LabelEncoder()
-    for col in data.select_dtypes(include=['object']).columns:
-        data[col] = encoder.fit_transform(data[col])  
-    return data
-
-def scale_features(data):
-    # Scale numerical features using StandardScaler
-    scaler = StandardScaler()
-    numerical_cols = data.select_dtypes(include=['int64', 'float64']).columns
-    data[numerical_cols] = scaler.fit_transform(data[numerical_cols])
+    num_imputer = SimpleImputer(strategy='median')
+    cat_imputer = SimpleImputer(strategy='most_frequent')
+    
+    data[numeric_cols] = num_imputer.fit_transform(data[numeric_cols])
+    data[cat_cols] = cat_imputer.fit_transform(data[cat_cols])
+    
     return data
 
 def preprocess_data(data):
-    # Apply full preprocessing pipeline
-    print("\n🧹 Data cleaning process...")
-
-    data = clean_data(data)
-    print("✅ Data Cleaned successfully!")
-
-    data = encode_features(data)
+    print("\n🧹 Preprocessing data...")
     
-    data = scale_features(data)
-    print("📊 Data Preview:\n")
-    return data
+    pipeline = Pipeline([
+        ('clean', FunctionTransformer(clean_data)),
+        ('feature_engineering', FunctionTransformer(feature_engineering))
+    ])
+    
+    processed_data = pipeline.fit_transform(data)
+    print("✅ Data preprocessing complete!")
+    return processed_data

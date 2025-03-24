@@ -1,136 +1,127 @@
 import joblib
 import pandas as pd
-from sklearn.metrics import roc_auc_score
 import streamlit as st
+from security_monitoring import login, log_event, log_performance
 import matplotlib.pyplot as plt
 import seaborn as sns
-from security_monitoring import log_event, log_performance, login
-import logging
+import plotly.express as px
 
-# To view in browerser type " streamlit run (streamlit run c:/Users/yeai2_6rsknlh/OneDrive/Visual/fraud_detection_project/scripts/app.py)"'
+# --- Configuration ---
+st.set_page_config(
+    page_title="Fraud Detection System",
+    page_icon="🔍",
+    layout="wide"
+)
 
-# Load the data
-@st.cache_data  # Cache the data to avoid reloading on every interaction
+# --- Data Loading (Cached) ---
+@st.cache_data
 def load_data():
-    # Load the transaction and identity datasets
     transaction_data = pd.read_csv("data/train_transaction.csv")
     identity_data = pd.read_csv("data/train_identity.csv")
+    return transaction_data.merge(identity_data, on="TransactionID", how="left")
 
-    # Merge transaction and identity datasets
-    data = transaction_data.merge(identity_data, on="TransactionID", how="left")
+@st.cache_resource
+def load_model():
+    return joblib.load("fraud_detection_model.pkl")
 
-    return data
-
-data = load_data()
-
-# Load saved model
-model = joblib.load("fraud_detection_model.pkl")
-
-# Load model and data
-@st.cache_data
-def load_resources():
-    model = joblib.load("fraud_detection_model.pkl")
-    data = pd.read_csv("data/train_transaction.csv")  # Adjust path as needed
-    return model, data
-
-model, data = load_resources()
-
-# --- New Login Layout ---
+# --- Authentication ---
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
-    st.title(("Login"))
+    st.title("Fraud Detection System Login")
+    if login():
+        st.rerun()
+    st.stop()
+
+# --- Main Application ---
+model = load_model()
+data = load_data()
+
+st.title(f"Fraud Detection Dashboard")
+st.write(f"Welcome, {st.session_state.username}!")
+
+# --- Sidebar Filters ---
+st.sidebar.header("Filters")
+min_amount = st.sidebar.number_input("Minimum Amount", value=0.0)
+max_amount = st.sidebar.number_input("Maximum Amount", value=float(data["TransactionAmt"].max()))
+card_types = st.sidebar.multiselect(
+    "Card Types",
+    options=data["card4"].unique(),
+    default=data["card4"].unique()
+)
+
+# Apply filters
+filtered_data = data[
+    (data["TransactionAmt"] >= min_amount) &
+    (data["TransactionAmt"] <= max_amount) &
+    (data["card4"].isin(card_types))
+]
+
+# --- Main Dashboard ---
+tab1, tab2, tab3 = st.tabs(["Overview", "Visualizations", "Predict Fraud"])
+
+with tab1:
+    st.header("Data Overview")
+    st.dataframe(filtered_data.head(1000))
+
+with tab2:
+    st.header("Data Visualizations")
     
-    col1, col2, col3 = st.columns([1,2,1])
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Fraud Distribution")
+        fig = px.pie(filtered_data, names="isFraud", title="Fraud vs Non-Fraud")
+        st.plotly_chart(fig, use_container_width=True)
+    
     with col2:
-        with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            login_button = st.form_submit_button("Login")
+        st.subheader("Transaction Amounts")
+        fig = px.histogram(filtered_data, x="TransactionAmt", nbins=50)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    st.subheader("Fraud by Card Type")
+    fig = px.bar(
+        filtered_data.groupby("card4")["isFraud"].mean().reset_index(),
+        x="card4", y="isFraud", title="Fraud Rate by Card Type"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab3:
+    st.header("Fraud Prediction")
+    
+    with st.form("prediction_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            amount = st.number_input("Transaction Amount", min_value=0.0)
+            card1 = st.number_input("Card1", min_value=0.0)
+            card2 = st.number_input("Card2", min_value=0.0)
+        with col2:
+            addr1 = st.number_input("Address", min_value=0.0)
+            card4 = st.selectbox("Card Type", ["Visa", "MasterCard", "American Express"])
+            card6 = st.selectbox("Card Category", ["Credit", "Debit"])
+        
+        if st.form_submit_button("Predict"):
+            input_data = pd.DataFrame({
+                "TransactionAmt": [amount],
+                "card1": [card1],
+                "card2": [card2],
+                "addr1": [addr1],
+                "card4": [0 if card4 == "Visa" else 1 if card4 == "MasterCard" else 2],
+                "card6": [0 if card6 == "Credit" else 1],
+                "TransactionDT": [0]
+            })
             
-            if login_button:
-                if username == "admin" and password == "password123":
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials")
+            prediction = model.predict(input_data)
+            if prediction[0] == 1:
+                st.error("⚠️ Fraud Detected!")
+                log_event("Fraud predicted", "warning")
+            else:
+                st.success("✅ Legitimate Transaction")
+                log_event("Legitimate transaction predicted")
 
-    st.stop()  # Don't show rest of app until logged in
-
-# Only show the main app content if the user is logged in
-if st.session_state["logged_in"]:
-    st.write(f"Welcome, {st.session_state['username']}!")
-
-    # Title for app
-    st.title("Fraud Detection System")
-
-    # Main app functionality
-    st.header("Enter Transaction Details")
-    transaction_amt = st.number_input("Transaction Amount", min_value=0.0)
-    card1 = st.number_input("card1", min_value=0.0)
-    card2 = st.number_input("card2", min_value=0.0)
-    addr1 = st.number_input("address", min_value=0.0)
-    card4 = st.selectbox("Card Type", ["Visa", "MasterCard", "American Express", "Discover"])
-    card6 = st.selectbox("Card Category", ["Credit", "Debit"])
-
-    # Convert categorical inputs to numerical values
-    card4_mapping = {"Visa": 0, "MasterCard": 1, "American Express": 2, "Discover": 3}
-    card6_mapping = {"Credit": 0, "Debit": 1}
-
-    card4_encoded = card4_mapping[card4]
-    card6_encoded = card6_mapping[card6]
-
-    # Create a DataFrame from the input data
-    input_data = pd.DataFrame({
-        "TransactionAmt": [transaction_amt],
-        "card1": [card1],
-        "card2": [card2],
-        "addr1": [addr1],
-        "card4": [card4_encoded],
-        "card6": [card6_encoded],
-        "TransactionDT": [0] 
-    })
-
-    if st.button("Predict"):
-        prediction = model.predict(input_data)
-        if prediction[0] == 1:
-            st.error("⚠️ Fraudulent Transaction Detected!")
-        else:
-            st.success("✅ Transaction is Safe.")
-
-    # --- Visualizations in Sidebar ---
-with st.sidebar:
-    st.header("Analytics Dashboard")
-    
-    viz_option = st.selectbox("Choose Visualization", [
-        "Transaction Amounts",
-        "Fraud by Card Type",
-        "Risk Patterns"
-    ])
-    
-    if viz_option == "Transaction Amounts":
-        st.subheader("Transaction Amounts Over Time")
-        fig1, ax1 = plt.subplots()
-        ax1.hist(data["TransactionAmt"], bins=50)
-        ax1.set_xlabel("Amount")
-        ax1.set_ylabel("Frequency")
-        st.pyplot(fig1)
-        
-    elif viz_option == "Fraud by Card Type":
-        st.subheader("Fraud Rates by Card Type")
-        fig2, ax2 = plt.subplots()
-        sns.barplot(x="card4", y="isFraud", data=data)
-        ax2.set_xlabel("Card Type")
-        ax2.set_ylabel("Fraud Rate")
-        st.pyplot(fig2)
-        
-    elif viz_option == "Risk Patterns":
-        st.subheader("High-Risk Patterns")
-        fig3, ax3 = plt.subplots(figsize=(6,4))
-        sns.heatmap(
-            data.pivot_table(index="card4", columns="card6", values="isFraud", aggfunc="mean"),
-            annot=True, cmap="Reds"
-        )
-        st.pyplot(fig3)
+# Log dashboard activity
+log_performance({
+    "user": st.session_state.username,
+    "filtered_records": len(filtered_data),
+    "fraud_rate": filtered_data["isFraud"].mean()
+})

@@ -1,0 +1,6 @@
+2025-03-24 18:39:09,494 - WARNING - Failed login attempt
+2025-03-24 18:39:36,214 - WARNING - Failed login attempt
+2025-03-24 18:39:54,007 - INFO - User admin logged in
+2025-03-24 18:40:16,264 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
+2025-03-24 18:41:21,874 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 0, 'fraud_rate': nan}
+2025-03-24 18:41:35,523 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 384767, 'fraud_rate': np.float64(0.03475609914571676)}

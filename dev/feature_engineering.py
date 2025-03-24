@@ -1,20 +1,43 @@
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.feature_selection import SelectKBest, f_classif
+
+# Configuration
+FEATURE_CONFIG = {
+    "numerical": ["TransactionAmt", "card1", "card2", "addr1", "dist1"],
+    "categorical": ["card4", "card6", "ProductCD"],
+    "datetime": ["TransactionDT"],
+    "target": "isFraud"
+}
 
 def feature_engineering(data):
-    # Selecting useful features
-    features = ["TransactionAmt", "card1", "card2", "addr1", "isFraud", "card4", "card6", "TransactionDT"]
-    data = data[features]
-
-    # Encoding categorical variables
-    if "card4" in data.columns:
-        data.loc[:, "card4"] = LabelEncoder().fit_transform(data["card4"].astype(str))
-    if "card6" in data.columns:
-        data.loc[:, "card6"] = LabelEncoder().fit_transform(data["card6"].astype(str))
-
-    # Scaling numerical data
-    if {"TransactionAmt", "card1", "card2", "addr1"}.issubset(data.columns):
-        scaler = MinMaxScaler()
-        data.loc[:, ["TransactionAmt", "card1", "card2", "addr1"]] = scaler.fit_transform(data[["TransactionAmt", "card1", "card2", "addr1"]])
-
+    # Select features
+    features = FEATURE_CONFIG["numerical"] + FEATURE_CONFIG["categorical"] + [FEATURE_CONFIG["target"]]
+    data = data[features].copy()
+    
+    # Handle missing values
+    for col in FEATURE_CONFIG["numerical"]:
+        data[col] = data[col].fillna(data[col].median())
+    
+    for col in FEATURE_CONFIG["categorical"]:
+        data[col] = data[col].fillna("UNKNOWN")
+    
+    # Feature encoding
+    for col in FEATURE_CONFIG["categorical"]:
+        le = LabelEncoder()
+        data[col] = le.fit_transform(data[col].astype(str))
+    
+    # Feature scaling
+    scaler = StandardScaler()
+    data[FEATURE_CONFIG["numerical"]] = scaler.fit_transform(data[FEATURE_CONFIG["numerical"]])
+    
+    # Feature selection
+    selector = SelectKBest(f_classif, k=10)
+    X = data.drop(FEATURE_CONFIG["target"], axis=1)
+    y = data[FEATURE_CONFIG["target"]]
+    X_new = selector.fit_transform(X, y)
+    
+    selected_features = X.columns[selector.get_support()]
+    data = pd.concat([pd.DataFrame(X_new, columns=selected_features), y], axis=1)
+    
     return data
