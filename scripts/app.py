@@ -35,26 +35,38 @@ data = load_data()
 # Load saved model
 model = joblib.load("fraud_detection_model.pkl")
 
-# Load saved model
-model = joblib.load("fraud_detection_model.pkl")
+# Load model and data
+@st.cache_data
+def load_resources():
+    model = joblib.load("fraud_detection_model.pkl")
+    data = pd.read_csv("data/train_transaction.csv")  # Adjust path as needed
+    return model, data
 
-# Initialize session state for login
+model, data = load_resources()
+
+# --- New Login Layout ---
 if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
+    st.session_state.logged_in = False
 
-# Show login form in the sidebar
-st.sidebar.header("Login")
-username = st.sidebar.text_input("Username")
-password = st.sidebar.text_input("Password", type="password")
-if st.sidebar.button("Login"):
-    if username == "admin" and password == "password123":  # Replace with secure authentication
-        st.session_state["logged_in"] = True
-        st.session_state["username"] = username
-        log_event(f"User {username} logged in successfully.")  # Log the login event
-        st.sidebar.success("Logged in successfully!")
-    else:
-        log_event("Invalid login attempt.", level="warning")  # Log failed login attempt
-        st.sidebar.error("Invalid username or password.")
+if not st.session_state.logged_in:
+    st.title("Fraud Detection System Login")
+    
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            login_button = st.form_submit_button("Login")
+            
+            if login_button:
+                if username == "admin" and password == "password123":
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials")
+
+    st.stop()  # Don't show rest of app until logged in
 
 # Only show the main app content if the user is logged in
 if st.session_state["logged_in"]:

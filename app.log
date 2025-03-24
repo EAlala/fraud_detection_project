@@ -24,3 +24,6 @@
 2025-03-23 20:54:20,751 - INFO - User admin logged in successfully.
 2025-03-23 20:54:21,614 - INFO - Model Performance: {'accuracy': 0.95, 'precision': 0.9, 'recall': 0.85, 'f1_score': 0.87, 'roc_auc': 0.94}
 2025-03-23 20:54:50,364 - INFO - Model Performance: {'accuracy': 0.95, 'precision': 0.9, 'recall': 0.85, 'f1_score': 0.87, 'roc_auc': 0.94}
+2025-03-24 16:30:36,416 - INFO - User admin logged in successfully.
+2025-03-24 16:30:37,399 - INFO - Model Performance: {'accuracy': 0.95, 'precision': 0.9, 'recall': 0.85, 'f1_score': 0.87, 'roc_auc': 0.94}
+2025-03-24 16:31:07,827 - INFO - Model Performance: {'accuracy': 0.95, 'precision': 0.9, 'recall': 0.85, 'f1_score': 0.87, 'roc_auc': 0.94}
