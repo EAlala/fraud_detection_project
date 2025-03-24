@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.pipeline import Pipeline
+import feature_engineering
 
 def clean_data(data):
     # Convert datetime

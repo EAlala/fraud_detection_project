@@ -4,3 +4,8 @@
 2025-03-24 18:40:16,264 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
 2025-03-24 18:41:21,874 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 0, 'fraud_rate': nan}
 2025-03-24 18:41:35,523 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 384767, 'fraud_rate': np.float64(0.03475609914571676)}
+2025-03-24 18:44:47,257 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
+2025-03-24 18:45:17,154 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 0, 'fraud_rate': nan}
+2025-03-24 18:45:37,848 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 189217, 'fraud_rate': np.float64(0.03433095334985757)}
+2025-03-24 18:48:32,036 - INFO - User admin logged in
+2025-03-24 18:48:37,362 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
