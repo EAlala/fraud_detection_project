@@ -9,15 +9,6 @@ import logging
 
 # To view in browerser type " streamlit run (streamlit run c:/Users/yeai2_6rsknlh/OneDrive/Visual/fraud_detection_project/scripts/app.py)"'
 
-# Configure logging (if not already configured in security_monitoring.py)
-import logging
-logging.basicConfig(
-    filename="app.log",  # Log file name
-    level=logging.INFO,  # Logging level
-    format="%(asctime)s - %(levelname)s - %(message)s",  # Log format
-    filemode="a",  # Append mode
-)
-
 # Load the data
 @st.cache_data  # Cache the data to avoid reloading on every interaction
 def load_data():
