@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import RotatingFileHandler
 import streamlit as st
 from cryptography.fernet import Fernet
 

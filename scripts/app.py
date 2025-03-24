@@ -49,7 +49,7 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
-    st.title("Fraud Detection System Login")
+    st.title(("Login"))
     
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
@@ -109,55 +109,37 @@ if st.session_state["logged_in"]:
         else:
             st.success("✅ Transaction is Safe.")
 
-    # Visualizations using the loaded data
-    st.header("Data Visualizations")
-
-    # Plot 1: Transaction Amounts Over Time
-    st.subheader("Transaction Amounts Over Time")
-    if "TransactionDT" in data.columns:
+    # --- Visualizations in Sidebar ---
+with st.sidebar:
+    st.header("Analytics Dashboard")
+    
+    viz_option = st.selectbox("Choose Visualization", [
+        "Transaction Amounts",
+        "Fraud by Card Type",
+        "Risk Patterns"
+    ])
+    
+    if viz_option == "Transaction Amounts":
+        st.subheader("Transaction Amounts Over Time")
         fig1, ax1 = plt.subplots()
-        ax1.plot(data["TransactionDT"], data["TransactionAmt"], label="Transaction Amount")
-        ax1.set_xlabel("Transaction Date")
-        ax1.set_ylabel("Transaction Amount")
-        ax1.legend()
+        ax1.hist(data["TransactionAmt"], bins=50)
+        ax1.set_xlabel("Amount")
+        ax1.set_ylabel("Frequency")
         st.pyplot(fig1)
-    else:
-        st.warning("⚠️ Column 'TransactionDT' not found. Skipping this visualization.")
-
-    # Plot 2: Fraud Rates by Card Type
-    st.subheader("Fraud Rates by Card Type")
-    if "card4" in data.columns and "isFraud" in data.columns:
-        fraud_by_card = data.groupby("card4")["isFraud"].mean().reset_index()
+        
+    elif viz_option == "Fraud by Card Type":
+        st.subheader("Fraud Rates by Card Type")
         fig2, ax2 = plt.subplots()
-        sns.barplot(x="card4", y="isFraud", data=fraud_by_card, ax=ax2)
+        sns.barplot(x="card4", y="isFraud", data=data)
         ax2.set_xlabel("Card Type")
         ax2.set_ylabel("Fraud Rate")
         st.pyplot(fig2)
-    else:
-        st.warning("⚠️ Required columns not found. Skipping this visualization.")
-
-    # Plot 3: High-Risk Transaction Patterns
-    st.subheader("High-Risk Transaction Patterns")
-    if "card4" in data.columns and "card6" in data.columns and "isFraud" in data.columns:
-        heatmap_data = data.pivot_table(index="card4", columns="card6", values="isFraud", aggfunc="mean")
-        fig3, ax3 = plt.subplots()
-        sns.heatmap(heatmap_data, annot=True, cmap="YlOrRd", ax=ax3)
-        ax3.set_xlabel("Card Category")
-        ax3.set_ylabel("Card Type")
+        
+    elif viz_option == "Risk Patterns":
+        st.subheader("High-Risk Patterns")
+        fig3, ax3 = plt.subplots(figsize=(6,4))
+        sns.heatmap(
+            data.pivot_table(index="card4", columns="card6", values="isFraud", aggfunc="mean"),
+            annot=True, cmap="Reds"
+        )
         st.pyplot(fig3)
-    else:
-        st.warning("⚠️ Required columns not found. Skipping this visualization.")
-
-    # Log performance metrics (example)
-    metrics = {
-        "accuracy": 0.95,
-        "precision": 0.90,
-        "recall": 0.85,
-        "f1_score": 0.87,
-        "roc_auc": 0.94
-    }
-    log_performance(metrics)
-
-else:
-    # Show a message prompting the user to log in
-    st.warning("Please log in to access the Fraud Detection System.")
