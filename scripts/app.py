@@ -1,8 +1,26 @@
 import joblib
 import pandas as pd
+from sklearn.metrics import roc_auc_score
 import streamlit as st
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # To view in browerser type " streamlit run (full path location of file)"'
+
+# Load the data
+@st.cache_data  # Cache the data to avoid reloading on every interaction
+def load_data():
+    # Load the transaction and identity datasets
+    transaction_data = pd.read_csv("data/train_transaction.csv")
+    identity_data = pd.read_csv("data/train_identity.csv")
+
+    # Merge transaction and identity datasets
+    data = transaction_data.merge(identity_data, on="TransactionID", how="left")
+
+    return data
+
+data = load_data()
+
 # Load saved model
 model = joblib.load("fraud_detection_model.pkl")
 
@@ -41,3 +59,42 @@ if st.button("Predict"):
         st.error("⚠️ Fraudulent Transaction Detected!")
     else:
         st.success("✅ Transaction is Safe.")
+
+# Visualizations using the loaded data
+st.header("Data Visualizations")
+
+# Plot 1: Transaction Amounts Over Time
+st.subheader("Transaction Amounts Over Time")
+if "TransactionDT" in data.columns:
+    fig1, ax1 = plt.subplots()
+    ax1.plot(data["TransactionDT"], data["TransactionAmt"], label="Transaction Amount")
+    ax1.set_xlabel("Transaction Date")
+    ax1.set_ylabel("Transaction Amount")
+    ax1.legend()
+    st.pyplot(fig1)
+else:
+    st.warning("⚠️ Column 'TransactionDT' not found. Skipping this visualization.")
+
+# Plot 2: Fraud Rates by Card Type
+st.subheader("Fraud Rates by Card Type")
+if "card4" in data.columns and "isFraud" in data.columns:
+    fraud_by_card = data.groupby("card4")["isFraud"].mean().reset_index()
+    fig2, ax2 = plt.subplots()
+    sns.barplot(x="card4", y="isFraud", data=fraud_by_card, ax=ax2)
+    ax2.set_xlabel("Card Type")
+    ax2.set_ylabel("Fraud Rate")
+    st.pyplot(fig2)
+else:
+    st.warning("⚠️ Required columns not found. Skipping this visualization.")
+
+# Plot 3: High-Risk Transaction Patterns
+st.subheader("High-Risk Transaction Patterns")
+if "card4" in data.columns and "card6" in data.columns and "isFraud" in data.columns:
+    heatmap_data = data.pivot_table(index="card4", columns="card6", values="isFraud", aggfunc="mean")
+    fig3, ax3 = plt.subplots()
+    sns.heatmap(heatmap_data, annot=True, cmap="YlOrRd", ax=ax3)
+    ax3.set_xlabel("Card Category")
+    ax3.set_ylabel("Card Type")
+    st.pyplot(fig3)
+else:
+    st.warning("⚠️ Required columns not found. Skipping this visualization.")
