@@ -4,8 +4,31 @@ from sklearn.metrics import roc_auc_score
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
+from security_monitoring import log_event, log_performance
 
 # To view in browerser type " streamlit run (full path location of file)"'
+
+# --- User Authentication ---
+if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
+    st.login()
+else:
+    st.title("Fraud Detection System")
+    st.write(f"Welcome, {st.session_state['username']}!")
+
+    # Log user access
+    log_event(f"User {st.session_state['username']} accessed the app.")
+
+    # --- Existing App Code ---
+    # (Keep all your existing code for transaction input, predictions, and visualizations here)
+
+    # Example: Log a prediction event
+    if st.button("Predict"):
+        # Your existing prediction logic
+        log_event("Prediction made by user.", level="info")
+
+    # Example: Log performance metrics (if available)
+    if "model_metrics" in st.session_state:
+        log_performance(st.session_state["model_metrics"])
 
 # Load the data
 @st.cache_data  # Cache the data to avoid reloading on every interaction
