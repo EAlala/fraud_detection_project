@@ -1,3 +1,4 @@
+import sqlite3
 import joblib
 import pandas as pd
 import streamlit as st
@@ -59,7 +60,7 @@ filtered_data = data[
 ]
 
 # --- Main Dashboard ---
-tab1, tab2, tab3 = st.tabs(["Overview", "Visualizations", "Predict Fraud"])
+tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Visualizations", "Predict Fraud", "Monitoring"])
 
 with tab1:
     st.header("Data Overview")
@@ -119,6 +120,69 @@ with tab3:
                 st.success("✅ Legitimate Transaction")
                 log_event("Legitimate transaction predicted")
 
+with tab4:
+    st.header("Model Performance Monitoring")
+    
+    # Connect to the metrics database
+    conn = sqlite3.connect('model_performance.db')
+    
+    # Create two columns for layout
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Plot metrics over time
+        st.subheader("Performance Trends")
+        metrics_df = pd.read_sql("SELECT * FROM metrics ORDER BY timestamp", conn)
+        
+        # Convert timestamp to datetime
+        metrics_df['timestamp'] = pd.to_datetime(metrics_df['timestamp'])
+        
+        # Plot all metrics
+        fig = px.line(metrics_df, x='timestamp', y=['accuracy', 'precision', 'recall', 'roc_auc'],
+                     title='Model Metrics Over Time',
+                     labels={'value': 'Score', 'timestamp': 'Date'})
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        # Show latest metrics
+        st.subheader("Latest Metrics")
+        latest = metrics_df.iloc[-1]
+        
+        st.metric("Accuracy", f"{latest['accuracy']:.2%}")
+        st.metric("Precision", f"{latest['precision']:.2%}")
+        st.metric("Recall", f"{latest['recall']:.2%}")
+        st.metric("ROC-AUC", f"{latest['roc_auc']:.2f}")
+        
+        # Model information
+        st.subheader("Model Info")
+        st.write(f"**Type:** {latest['model']}")
+        st.write(f"**Last Trained:** {latest['timestamp'].strftime('%Y-%m-%d %H:%M')}")
+    
+    # Add performance thresholds and alerts
+    st.subheader("Performance Alerts")
+    
+    # Check if any metric is below threshold
+    alert_thresholds = {
+        'accuracy': 0.95,
+        'precision': 0.90,
+        'recall': 0.85,
+        'roc_auc': 0.90
+    }
+    
+    alerts = []
+    for metric, threshold in alert_thresholds.items():
+        if latest[metric] < threshold:
+            alerts.append(f"⚠️ {metric.capitalize()} below threshold ({latest[metric]:.2%} < {threshold:.2%})")
+    
+    if alerts:
+        for alert in alerts:
+            st.error(alert)
+    else:
+        st.success("All metrics within expected ranges")
+    
+    conn.close()
+
+    
 # Log dashboard activity
 log_performance({
     "user": st.session_state.username,

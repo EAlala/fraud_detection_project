@@ -51,24 +51,23 @@ def evaluate_model(model, x_test, y_test):
     plot_roc_curve(y_test, y_pred_proba, metrics['roc_auc'])
     return metrics
 
-def log_metrics_to_db(metrics, model_name):
+def log_metrics_to_db(metrics, model_name, training_duration=None):
     conn = sqlite3.connect('model_performance.db')
     cursor = conn.cursor()
+    
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS metrics (
-            timestamp TEXT,
-            model TEXT,
-            accuracy REAL,
-            precision REAL,
-            recall REAL,
-            roc_auc REAL
-        )
-    ''')
-    cursor.execute('''
-        INSERT INTO metrics VALUES (?, ?, ?, ?, ?, ?)
-    ''', (datetime.now().isoformat(), model_name,
-          metrics['accuracy'], metrics['precision'],
-          metrics['recall'], metrics['roc_auc']))
+        INSERT INTO metrics VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        datetime.now().isoformat(),
+        str(model_name),
+        metrics['accuracy'],
+        metrics['precision'],
+        metrics['recall'],
+        metrics['roc_auc'],
+        training_duration,
+        "1.0"  # You can version your data
+    ))
+    
     conn.commit()
     conn.close()
 

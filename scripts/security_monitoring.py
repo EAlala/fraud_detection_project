@@ -1,3 +1,4 @@
+import sqlite3
 import bcrypt
 import os
 from dotenv import load_dotenv
@@ -66,3 +67,26 @@ def log_event(message, level="info"):
 
 def log_performance(metrics):
     log_event(f"Performance Metrics: {metrics}")
+
+def init_metrics_db():
+    conn = sqlite3.connect('model_performance.db')
+    cursor = conn.cursor()
+    
+    # Create table with additional columns if it doesn't exist
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS metrics (
+            timestamp TEXT,
+            model TEXT,
+            accuracy REAL,
+            precision REAL,
+            recall REAL,
+            roc_auc REAL,
+            training_duration REAL,
+            data_version TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Call this function when your app starts
+init_metrics_db()
