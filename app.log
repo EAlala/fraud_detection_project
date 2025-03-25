@@ -26,3 +26,10 @@
 2025-03-24 19:18:46,568 - INFO - Legitimate transaction predicted
 2025-03-24 19:18:46,571 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 384767, 'fraud_rate': np.float64(0.03475609914571676)}
 2025-03-24 19:19:05,919 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 190794, 'fraud_rate': np.float64(0.034262083713324315)}
+2025-03-24 19:25:41,703 - INFO - User admin logged in
+2025-03-24 19:30:56,106 - INFO - User admin logged in
+2025-03-24 19:31:22,219 - INFO - User admin logged in
+2025-03-24 19:33:56,075 - INFO - User admin logged in
+2025-03-24 19:34:27,819 - INFO - User admin logged in
+2025-03-24 19:35:19,332 - INFO - User admin logged in
+2025-03-24 19:36:57,927 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
