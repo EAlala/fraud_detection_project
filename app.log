@@ -9,3 +9,20 @@
 2025-03-24 18:45:37,848 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 189217, 'fraud_rate': np.float64(0.03433095334985757)}
 2025-03-24 18:48:32,036 - INFO - User admin logged in
 2025-03-24 18:48:37,362 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
+2025-03-24 18:55:42,220 - INFO - Performance Metrics: {'accuracy': 0.5555593185897653, 'precision': 0.07045438359091233, 'recall': 0.9328147100424328, 'f1': 0.13101347548256795, 'roc_auc': np.float64(0.8680389518460342), 'confusion_matrix': array([[61659, 52207],
+       [  285,  3957]])}
+2025-03-24 18:57:28,514 - INFO - Performance Metrics: {'accuracy': 0.5555593185897653, 'precision': 0.07045438359091233, 'recall': 0.9328147100424328, 'f1': 0.13101347548256795, 'roc_auc': np.float64(0.8680389518460342), 'confusion_matrix': array([[61659, 52207],
+       [  285,  3957]])}
+2025-03-24 19:02:59,923 - INFO - User admin logged in
+2025-03-24 19:03:07,030 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
+2025-03-24 19:14:57,682 - INFO - User admin logged in
+2025-03-24 19:15:34,097 - INFO - User admin logged in
+2025-03-24 19:17:15,045 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 392995, 'fraud_rate': np.float64(0.03544065446125269)}
+2025-03-24 19:17:49,210 - INFO - User admin logged in
+2025-03-24 19:17:54,106 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
+2025-03-24 19:18:01,383 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 401323, 'fraud_rate': np.float64(0.03530074279321145)}
+2025-03-24 19:18:14,761 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 0, 'fraud_rate': nan}
+2025-03-24 19:18:20,810 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 384767, 'fraud_rate': np.float64(0.03475609914571676)}
+2025-03-24 19:18:46,568 - INFO - Legitimate transaction predicted
+2025-03-24 19:18:46,571 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 384767, 'fraud_rate': np.float64(0.03475609914571676)}
+2025-03-24 19:19:05,919 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 190794, 'fraud_rate': np.float64(0.034262083713324315)}
