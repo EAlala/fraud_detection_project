@@ -41,3 +41,4 @@ training data did not have the following fields: TransactionDT
 training data did not have the following fields: TransactionDT
 2025-03-24 19:50:28,960 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
 2025-03-24 19:54:40,478 - INFO - User admin logged in
+2025-03-24 19:55:02,963 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
