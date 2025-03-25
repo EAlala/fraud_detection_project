@@ -33,3 +33,11 @@
 2025-03-24 19:34:27,819 - INFO - User admin logged in
 2025-03-24 19:35:19,332 - INFO - User admin logged in
 2025-03-24 19:36:57,927 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
+2025-03-24 19:48:48,797 - ERROR - Model evaluation error: feature_names mismatch: ['TransactionAmt', 'card1', 'card2', 'addr1', 'dist1', 'card4', 'card6', 'ProductCD'] ['TransactionAmt', 'card1', 'card2', 'addr1', 'card4', 'card6', 'TransactionDT']
+expected dist1, ProductCD in input data
+training data did not have the following fields: TransactionDT
+2025-03-24 19:48:48,801 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
+2025-03-24 19:50:28,957 - ERROR - Model evaluation error: feature_names mismatch: ['TransactionAmt', 'card1', 'card2', 'addr1', 'dist1', 'card4', 'card6', 'ProductCD'] ['TransactionAmt', 'card1', 'card2', 'addr1', 'dist1', 'card4', 'card6', 'ProductCD', 'TransactionDT']
+training data did not have the following fields: TransactionDT
+2025-03-24 19:50:28,960 - INFO - Performance Metrics: {'user': 'admin', 'filtered_records': 590540, 'fraud_rate': np.float64(0.03499000914417313)}
+2025-03-24 19:54:40,478 - INFO - User admin logged in
