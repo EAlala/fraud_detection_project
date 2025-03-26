@@ -5,11 +5,16 @@ from datetime import datetime
 def load_data():
     print("🔄 Loading data...")
     
-    # Check for cached processed data
-    if os.path.exists("data/processed_data.parquet"):
-        data = pd.read_parquet("data/processed_data.parquet")
-        print("✅ Loaded cached processed data!")
-        return data
+    def load_data():
+        print("🔄 Loading data...")
+        if os.path.exists("data/processed_data.parquet"):
+            data = pd.read_parquet("data/processed_data.parquet")
+            # Validate target column exists and is numeric
+            if 'isFraud' not in data.columns:
+                raise ValueError("Target column 'isFraud' missing")
+            if not pd.api.types.is_numeric_dtype(data['isFraud']):
+                raise ValueError("isFraud must be numeric")
+            return data
     
     # Load raw data
     transaction_data = pd.read_csv("data/train_transaction.csv")

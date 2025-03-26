@@ -76,17 +76,15 @@ def init_metrics_db():
     conn = sqlite3.connect('model_performance.db')
     cursor = conn.cursor()
     
-    # Create table with additional columns if it doesn't exist
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS metrics (
+        CREATE TABLE IF NOT EXISTS model_versions (
+            version_id TEXT PRIMARY KEY,
+            model_type TEXT,
             timestamp TEXT,
-            model TEXT,
-            accuracy REAL,
-            precision REAL,
-            recall REAL,
-            roc_auc REAL,
-            training_duration REAL,
-            data_version TEXT
+            features_used TEXT,
+            performance_metrics TEXT,
+            training_data_size INTEGER,
+            path TEXT
         )
     ''')
     conn.commit()

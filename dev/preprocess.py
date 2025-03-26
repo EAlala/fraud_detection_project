@@ -33,12 +33,23 @@ def scale_features(data):
 def preprocess_data(data):
     # Apply full preprocessing pipeline
     print("\n🧹 Data cleaning process...")
-
     data = clean_data(data)
-    print("✅ Data Cleaned successfully!")
-
-    data = encode_features(data)
     
+    # Ensure isFraud is properly formatted as binary integers
+    if 'isFraud' in data.columns:
+        # Convert to integer first in case it's boolean or string
+        data['isFraud'] = data['isFraud'].astype(int)
+        
+        # Verify we only have 0s and 1s
+        unique_values = data['isFraud'].unique()
+        if not set(unique_values).issubset({0, 1}):
+            print(f"⚠️ Unexpected values in isFraud: {unique_values}")
+            # Force binary classification by thresholding if needed
+            data['isFraud'] = (data['isFraud'] > 0).astype(int)
+        
+        print("✅ Converted isFraud to binary integers (0/1)")
+        print(f"Final value counts:\n{data['isFraud'].value_counts()}")
+    
+    data = encode_features(data)
     data = scale_features(data)
-    print("📊 Data Preview:\n")
     return data

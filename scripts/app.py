@@ -22,8 +22,21 @@ def load_data():
     return transaction_data.merge(identity_data, on="TransactionID", how="left")
 
 @st.cache_resource
-def load_model():
-    return joblib.load("fraud_detection_model_v2.pkl")
+def load_model(model_type='xgboost', version='latest'):
+    """Load specified model version"""
+    if version == 'latest':
+        filename = f"models/{model_type}_model_latest.pkl"
+    else:
+        filename = f"models/{model_type}_model_v{version}.pkl"
+    
+    try:
+        return joblib.load(filename)
+    except FileNotFoundError:
+        st.error(f"Model version {version} not found!")
+        return None
+
+# Later in your app code:
+model = load_model('xgboost')
 
 # --- Authentication ---
 # Initialize session state variables
