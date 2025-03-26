@@ -1,0 +1,10 @@
+# Business Vision
+**Goal**: Reduce fraudulent transaction losses by ≥80% through ML-powered detection.
+
+# Key Requirements
+| ID  | Requirement                          | Code Implementation           | Status  |
+|-----|--------------------------------------|--------------------------------|---------|
+| BR1 | Real-time fraud scoring              | `app.py` Prediction Tab        | ✅ Done |
+| BR2 | Role-based access control            | `security_monitoring.py`       | ✅ Done |
+| BR3 | Model accuracy ≥90%                  | Tested at 92.3% AUC-ROC        | ✅ Done |
+| BR4 | Visual transaction analysis          | `visualizations.py`            | ✅ Done |
