@@ -26,12 +26,15 @@ def load_model():
     return joblib.load("fraud_detection_model_v2.pkl")
 
 # --- Authentication ---
+# Initialize session state variables
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = None
 
 if not st.session_state.logged_in:
     st.title("Fraud Detection System Login")
-    if login():
+    if login():  # Make sure login() sets both variables
         st.rerun()
     st.stop()
 
@@ -40,7 +43,10 @@ model = load_model()
 data = load_data()
 
 st.title(f"Fraud Detection Dashboard")
-st.write(f"Welcome, {st.session_state.username}!")
+if st.session_state.username:
+    st.write(f"Welcome, {st.session_state.username}!")
+else:
+    st.write("Welcome!")
 
 # --- Sidebar Filters ---
 st.sidebar.header("Filters")
@@ -96,21 +102,30 @@ with tab3:
             amount = st.number_input("Transaction Amount", min_value=0.0)
             card1 = st.number_input("Card1", min_value=0.0)
             card2 = st.number_input("Card2", min_value=0.0)
-        with col2:
             addr1 = st.number_input("Address", min_value=0.0)
+        with col2:
             card4 = st.selectbox("Card Type", ["Visa", "MasterCard", "American Express"])
             card6 = st.selectbox("Card Category", ["Credit", "Debit"])
+            product_cd = st.selectbox("Product Code", ["W", "H", "C", "R", "S"])  # Added
         
         if st.form_submit_button("Predict"):
+            # Create input data with all expected features in correct order
             input_data = pd.DataFrame({
                 "TransactionAmt": [amount],
                 "card1": [card1],
                 "card2": [card2],
                 "addr1": [addr1],
+                "dist1": [0],  # Added default value
                 "card4": [0 if card4 == "Visa" else 1 if card4 == "MasterCard" else 2],
                 "card6": [0 if card6 == "Credit" else 1],
-                "TransactionDT": [0]
+                "ProductCD": [0 if product_cd == "W" else 1 if product_cd == "H" else 2 if product_cd == "C" else 3 if product_cd == "R" else 4],
+                "D1": [0],  # Added default value
+                "D2": [0]   # Added default value
             })
+            
+            # Ensure columns match exactly what model expects
+            expected_features = model.get_booster().feature_names
+            input_data = input_data[expected_features]
             
             prediction = model.predict(input_data)
             if prediction[0] == 1:

@@ -41,6 +41,10 @@ def login():
     if st.sidebar.button("Login"):
         if username in users and verify_password(password, users[username]):
             st.session_state["logged_in"] = True
+            st.session_state["username"] = username  # Make sure this line exists
+            return True
+        if username in users and verify_password(password, users[username]):
+            st.session_state["logged_in"] = True
             st.session_state["username"] = username
             st.sidebar.success("Logged in successfully!")
             log_event(f"User {username} logged in", "info")

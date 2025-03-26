@@ -4,7 +4,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 
 # Configuration
 FEATURE_CONFIG = {
-    "numerical": ["TransactionAmt", "card1", "card2", "addr1", "dist1"],
+    "numerical": ["TransactionAmt", "card1", "card2", "addr1", "dist1", "D1", "D2"],
     "categorical": ["card4", "card6", "ProductCD"],
     "datetime": ["TransactionDT"],
     "target": "isFraud"
