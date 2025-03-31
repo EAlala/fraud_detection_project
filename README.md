@@ -14,7 +14,3 @@ This is a Streamlit app for detecting fraudulent transactions.
     Password: admin123
 
 6.	Loading data does take a little while, so please be patient and enjoy. 
-    lf = Logistic Regression
-    rf = Random Forest
-
-test

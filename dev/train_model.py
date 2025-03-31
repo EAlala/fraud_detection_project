@@ -13,7 +13,7 @@ from sklearn.metrics import precision_score, recall_score, roc_auc_score, f1_sco
 # Config
 CFG = {
     'models': {
-        'rf': {'n_estimators': 200,          
+        'Random_Forest': {'n_estimators': 200,          
             'max_depth': None,            
             'min_samples_split': 50,      
             'min_samples_leaf': 20,       
@@ -23,7 +23,7 @@ CFG = {
             'oob_score': True,            
             'n_jobs': -1,
             'random_state': 42},
-        'lr': {'C': 0.1, 'max_iter': 500, 'class_weight': 'balanced', 'solver': 'lbfgs'}
+        'Logistic_Regression': {'C': 0.1, 'max_iter': 500, 'class_weight': 'balanced', 'solver': 'lbfgs'}
     },
     'test_size': 0.2,
     'random_state': 42,
@@ -57,8 +57,8 @@ def find_optimal_threshold(model, X_test, y_test):
 
 # Train model
 def train_model(X, y, model_type):
-    model = (RandomForestClassifier(**CFG['models']['rf']) if model_type == 'rf' 
-            else LogisticRegression(**CFG['models']['lr']))
+    model = (RandomForestClassifier(**CFG['models']['Random_Forest']) if model_type == 'Random_Forest' 
+            else LogisticRegression(**CFG['models']['Logistic_Regression']))
     model.fit(X, y)
     return model
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         stratify=data['isFraud']
     )
     
-    for name in ['rf', 'lr']:
+    for name in ['Random_Forest', 'Logistic_Regression']:
         print(f"\n{'='*50}")
         print(f"Training {name.upper()} model...")
         
