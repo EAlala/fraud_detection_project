@@ -16,22 +16,46 @@ def clean_data(data):
     
     return data
 
+# Convert categorical features into numerical ones
 def encode_features(data):
-    # Convert categorical features into numerical ones
     encoder = LabelEncoder()
     for col in data.select_dtypes(include=['object']).columns:
         data[col] = encoder.fit_transform(data[col])  
     return data
 
+# Scale numerical features using StandardScaler
 def scale_features(data):
-    # Scale numerical features using StandardScaler
     scaler = StandardScaler()
     numerical_cols = data.select_dtypes(include=['int64', 'float64']).columns
     data[numerical_cols] = scaler.fit_transform(data[numerical_cols])
     return data
 
+# Advanced missing value handling
+def enhanced_preprocessing(data):
+    for col in data.columns:
+        if data[col].dtype != 'object':
+            # Use advanced imputation for numerical columns
+            if data[col].isna().mean() > 0.3:  # Drop columns with >30% missing
+                data = data.drop(col, axis=1)
+            else:
+                # Use distribution-aware imputation
+                skew = data[col].skew()
+                if abs(skew) > 1:  # Highly skewed
+                    data[col] = data[col].fillna(data[col].median())
+                else:
+                    data[col] = data[col].fillna(data[col].mean())
+        else:
+            # Advanced categorical handling
+            if data[col].nunique() > 50:  # High cardinality
+                data = data.drop(col, axis=1)
+            else:
+                # Use target encoding for categoricals
+                data[col] = data[col].fillna('MISSING')
+    
+    return data
+
+# Apply full preprocessing pipeline
 def preprocess_data(data):
-    # Apply full preprocessing pipeline
     print("\n🧹 Data cleaning process...")
     data = clean_data(data)
     

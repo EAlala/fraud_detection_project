@@ -1,6 +1,9 @@
 **Hypothesis**: "Model can predict fraud with >90% accuracy"
 
 **Results**:
-- AUC-ROC: 0.923 ✅ Accepted
-- Precision: 0.89
-- Recall: 0.91
+| Model               | Precision | Recall | ROC_AUC | F1-Score
+|---------------------|-----------|--------|---------|---------|
+| Random Forest	      | 92%	      | 75%    |  0.94   |	0.82
+| Logistic Regression | 88%	      | 70%	   |  0.89	 |  0.78
+
+**Conclusion** : Hypothesis accepted for precision (>90%) but rejected for recall (needs improvement).

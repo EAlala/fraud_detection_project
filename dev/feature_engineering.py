@@ -1,6 +1,7 @@
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.feature_selection import RFECV, SelectKBest, f_classif
 
 # Configuration
 FEATURE_CONFIG = {
@@ -10,6 +11,16 @@ FEATURE_CONFIG = {
     "target": "isFraud"
 }
 
+# Feature selection
+def select_features(X, y):
+    selector = RFECV(
+        estimator=LogisticRegression(max_iter=1000),
+        min_features_to_select=20,
+        cv=3
+    )
+    return selector.fit_transform(X, y)
+
+# Feature engineering
 def feature_engineering(data):
     # Select features
     features = FEATURE_CONFIG["numerical"] + FEATURE_CONFIG["categorical"] + [FEATURE_CONFIG["target"]]

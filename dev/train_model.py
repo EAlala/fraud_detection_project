@@ -1,192 +1,143 @@
-import joblib
+from datetime import datetime  
+import uuid
 import sqlite3
-import os
-import pandas as pd
+from pathlib import Path
+import joblib
 import numpy as np
-from datetime import datetime
+import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (accuracy_score, classification_report, 
-                           confusion_matrix, f1_score, precision_score, 
-                           recall_score, roc_auc_score, average_precision_score)
-from visualizations import plot_roc_curve
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import precision_score, recall_score, roc_auc_score, f1_score
 
-# --- Data Splitting ---
-def split_data(data, test_size=0.2, random_state=42):
-    """Split data into training and test sets with target validation"""
-    if 'isFraud' not in data.columns:
-        raise ValueError("Target column 'isFraud' not found in data")
-        
-    x = data.drop("isFraud", axis=1)
-    y = data["isFraud"]
-    
-    # Convert target to proper binary format
-    y = y.astype(float)  # First convert to float to handle any numeric types
-    
-    # Diagnostic output
-    print("\n🔍 Target Variable Analysis:")
-    print(f"Original dtype: {y.dtype}")
-    print(f"Unique values before conversion: {np.unique(y)}")
-    print(f"Value counts:\n{y.value_counts()}")
-    
-    # Convert to binary (0/1) ensuring proper classification labels
-    y_binary = np.where(y > 0.5, 1, 0).astype(int)
-    
-    print("\n✅ Converted target to binary:")
-    print(f"New unique values: {np.unique(y_binary)}")
-    print(f"New value counts:\n{pd.Series(y_binary).value_counts()}")
-    
-    return train_test_split(x, y_binary, test_size=test_size, random_state=random_state, stratify=y_binary)
+# Config
+CFG = {
+    'models': {
+        'rf': {'n_estimators': 200,          
+            'max_depth': None,            
+            'min_samples_split': 50,      
+            'min_samples_leaf': 20,       
+            'max_features': 'sqrt',      
+            'class_weight': {0: 1, 1: 10},
+            'bootstrap': True,
+            'oob_score': True,            
+            'n_jobs': -1,
+            'random_state': 42},
+        'lr': {'C': 0.1, 'max_iter': 500, 'class_weight': 'balanced', 'solver': 'lbfgs'}
+    },
+    'test_size': 0.2,
+    'random_state': 42,
+    'threshold': 0.50
+}
 
-# --- Model Training ---
-def train_model(x_train, y_train, model_type='logistic'):
-    """Train specified model type with enhanced validation"""
-    print(f"\n🏋️ Training {model_type} model...")
-    
-    # Final validation check
-    unique_labels = np.unique(y_train)
-    if not set(unique_labels).issubset({0, 1}):
-        raise ValueError(f"Invalid labels found: {unique_labels}. Must be binary (0/1)")
-    
-    if model_type == 'logistic':
-        model = LogisticRegression(
-            random_state=42,
-            class_weight='balanced',
-            max_iter=1000,
-            solver='liblinear'  # More stable for binary classification
-        )
-    elif model_type == 'xgboost':
-        model = XGBClassifier(
-            scale_pos_weight=100,
-            random_state=42,
-            eval_metric='aucpr',
-            use_label_encoder=False
-        )
-    elif model_type == 'random_forest':
-        model = RandomForestClassifier(
-            class_weight='balanced_subsample',
-            random_state=42,
-            n_estimators=100
-        )
-    else:
-        raise ValueError(f"Unknown model type: {model_type}")
-    
-    try:
-        model.fit(x_train, y_train)
-        print(f"✅ {model_type.capitalize()} model trained successfully!")
-        
-        # Set feature names for XGBoost
-        if model_type == 'xgboost':
-            model.get_booster().feature_names = list(x_train.columns)
-        
-        return model
-    except Exception as e:
-        print(f"❌ Error training {model_type} model: {str(e)}")
-        raise
+# Load data
+def load_data():
+    from load_data import load_data as ld
+    from preprocess import preprocess_data
+    data = preprocess_data(ld())
+    return (data[['TransactionAmt', 'card1', 'card2', 'addr1', 'dist1', 
+                'D1', 'D2', 'card4', 'card6', 'ProductCD', 'isFraud']]
+            .assign(isFraud=lambda x: x['isFraud'].gt(0).astype(int)))
 
-# --- Evaluation ---
-def evaluate_model(model, x_test, y_test):
-    """Evaluate model performance with comprehensive metrics"""
-    # Verify test labels are binary
-    if not set(np.unique(y_test)).issubset({0, 1}):
-        y_test = np.where(y_test > 0.5, 1, 0).astype(int)
+# Threshold optimizer
+def find_optimal_threshold(model, X_test, y_test):
+    from sklearn.metrics import accuracy_score
+    thresholds = np.linspace(0.1, 0.9, 50)
+    best_acc = 0
+    best_thresh = 0.5
     
-    y_pred = model.predict(x_test)
-    y_pred_proba = model.predict_proba(x_test)[:, 1]
+    for thresh in thresholds:
+        y_pred = (model.predict_proba(X_test)[:,1] >= thresh).astype(int)
+        acc = accuracy_score(y_test, y_pred)
+        if acc > best_acc:
+            best_acc = acc
+            best_thresh = thresh
     
-    metrics = {
-        'accuracy': accuracy_score(y_test, y_pred),
-        'precision': precision_score(y_test, y_pred),
-        'recall': recall_score(y_test, y_pred),
-        'f1': f1_score(y_test, y_pred),
-        'roc_auc': roc_auc_score(y_test, y_pred_proba),
-        'pr_auc': average_precision_score(y_test, y_pred_proba),
-        'confusion_matrix': confusion_matrix(y_test, y_pred)
+    return best_thresh, best_acc
+
+# Train model
+def train_model(X, y, model_type):
+    model = (RandomForestClassifier(**CFG['models']['rf']) if model_type == 'rf' 
+            else LogisticRegression(**CFG['models']['lr']))
+    model.fit(X, y)
+    return model
+
+# Evaluate model
+def evaluate(m, X, y):
+    proba = m.predict_proba(X)[:,1]
+    pred = (proba > CFG['threshold']).astype(int)
+    return {
+        'precision': precision_score(y, pred),
+        'recall': recall_score(y, pred),
+        'roc_auc': roc_auc_score(y, proba),
+        'f1': f1_score(y, pred)
     }
-    
-    print("\n📊 Model Evaluation:")
-    for metric, value in metrics.items():
-        if metric != 'confusion_matrix':
-            print(f"{metric.capitalize()}: {value:.4f}")
-    
-    print("\nConfusion Matrix:")
-    print(metrics['confusion_matrix'])
-    print("\nClassification Report:")
-    print(classification_report(y_test, y_pred))
-    
-    # Plot performance curves
-    plot_roc_curve(y_test, y_pred_proba, metrics['roc_auc'])
-    
-    return metrics
 
-# --- Model Saving ---
-def save_models(x_train, y_train):
-    """Train and save all model types with versioning"""
-    os.makedirs("models", exist_ok=True)
-    model_version = datetime.now().strftime("%Y%m%d_%H%M")
+# Save model
+def save(m, name, X, metrics):
+    # Ensure database and table exist
+    from security_monitoring import init_metrics_db
+    init_metrics_db()
     
-    models = {
-        'logistic': train_model(x_train, y_train, 'logistic'),
-        'xgboost': train_model(x_train, y_train, 'xgboost'),
-        'random_forest': train_model(x_train, y_train, 'random_forest')
-    }
+    # Ensure models directory exists
+    Path("models").mkdir(exist_ok=True)
     
-    for name, model in models.items():
-        filename = f"models/{name}_model_v{model_version}.pkl"
-        joblib.dump(model, filename)
-        print(f"💾 Saved {name} model to {filename}")
-        
-        # Evaluate and log metrics
-        x_train_split, x_test_split, y_train_split, y_test_split = train_test_split(
-            x_train, y_train, test_size=0.2, random_state=42
-        )
-        metrics = evaluate_model(model, x_test_split, y_test_split)
-        log_metrics_to_db(metrics, f"{name.capitalize()} v{model_version}")
-
-# --- Metrics Logging ---
-def log_metrics_to_db(metrics, model_name, training_duration=None):
-    """Log model performance metrics to database"""
+    # Save model components
+    model_path = f'models/{name}_model.pkl'
+    joblib.dump(m, model_path)
+    joblib.dump(list(X.columns), f'models/{name}_features.pkl')
+    
+    # Connect to database
     conn = sqlite3.connect('model_performance.db')
     cursor = conn.cursor()
     
-    cursor.execute('''
-        INSERT INTO metrics VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        datetime.now().isoformat(),
-        model_name,
-        metrics['accuracy'],
-        metrics['precision'],
-        metrics['recall'],
-        metrics['f1'],
-        metrics['roc_auc'],
-        metrics['pr_auc'],
-        training_duration,
-        "1.0"  # Data version
-    ))
-    
-    conn.commit()
-    conn.close()
-
-# --- Main Training Pipeline ---
-if __name__ == "__main__":
-    print("🚀 Starting model training pipeline...")
-    
     try:
-        from load_data import load_data
-        from preprocess import preprocess_data
-        
-        raw_data = load_data()
-        processed_data = preprocess_data(raw_data)
-        
-        # Split data with automatic binary conversion
-        x_train, x_test, y_train, y_test = split_data(processed_data)
-        
-        # Train and save all models
-        save_models(x_train, y_train)
-        
-        print("\n🎉 All models trained and saved successfully!")
+        # Insert new record
+        cursor.execute('''
+            INSERT INTO model_versions (
+                version_id, model_type, timestamp, 
+                features_used, performance_metrics,
+                training_data_size, path
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            str(uuid.uuid4()),
+            name,
+            datetime.now().isoformat(),
+            str(list(X.columns)),
+            str(metrics),
+            len(X),
+            model_path
+        ))
+        conn.commit()
+        print(f"Saved {name} model metrics to database")
     except Exception as e:
-        print(f"\n❌ Pipeline failed: {str(e)}")
-        raise
+        print(f"Error saving to database: {e}")
+    finally:
+        conn.close()
+
+if __name__ == "__main__":
+    data = load_data()
+    X_train, X_test, y_train, y_test = train_test_split(
+        data.drop('isFraud', axis=1), 
+        data['isFraud'],
+        test_size=CFG['test_size'],
+        random_state=CFG['random_state'],
+        stratify=data['isFraud']
+    )
+    
+    for name in ['rf', 'lr']:
+        print(f"\n{'='*50}")
+        print(f"Training {name.upper()} model...")
+        
+        model = train_model(X_train, y_train, name)
+        metrics = evaluate(model, X_test, y_test)
+        
+        # Print metrics with type checking
+        print(f"\n{name.upper()} Metrics:")
+        for k, v in metrics.items():
+            if isinstance(v, (int, float)):
+                print(f"  {k}: {v:.3f}")
+            else:
+                print(f"  {k}: {v}")
+        
+        save(model, name, X_train, metrics)

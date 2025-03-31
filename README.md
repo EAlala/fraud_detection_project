@@ -1,8 +1,20 @@
 This is a Streamlit app for detecting fraudulent transactions.
 
-## How to Use
-1. Enter transaction details in the input fields.
-2. Click "Predict" to see if the transaction is fraudulent.
+## Quick Start Guide
+1.	Open zip file in your IDE (I used VS Code).
 
-## Deployment
-This app is deployed on Streamlit Sharing: [Live App](https://frauddetectionproject-bcdkk2vy3obtgdecrvzxzt.streamlit.app/)
+2.	Install dependencies “pip install -r requirements.txt”.
+
+3.	Folder “model” should have models if not run “train_model.py”.
+
+4.	Run “app.py”. If no pop-up tab for streamlit happens, then look at the terminal for a command and copy and run that command.  Example: ![alt text](image.png)
+
+5.	Login with 
+    Username: admin
+    Password: admin123
+
+6.	Loading data does take a little while, so please be patient and enjoy. 
+    lf = Logistic Regression
+    rf = Random Forest
+
+test
